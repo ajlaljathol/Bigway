@@ -3,8 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\student;
-use Illuminate\Auth\Access\Response;
+use App\Models\Student;
 
 class StudentPolicy
 {
@@ -13,14 +12,25 @@ class StudentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Admin can view all students
+        return $user->role === 'admin' || $user->role === 'guardian';
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, student $student): bool
+    public function view(User $user, Student $student): bool
     {
+        // Admin can view all students
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        // Guardian can only view their own children
+        if ($user->role === 'guardian') {
+            return $user->id === $student->guardian->user_id;
+        }
+
         return false;
     }
 
@@ -29,38 +39,59 @@ class StudentPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Admin & Guardian both can create students
+        return $user->role === 'admin' || $user->role === 'guardian';
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, student $student): bool
+    public function update(User $user, Student $student): bool
     {
+        // Admin can update any student
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        // Guardian can update only their own children
+        if ($user->role === 'guardian') {
+            return $user->id === $student->guardian->user_id;
+        }
+
         return false;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, student $student): bool
+    public function delete(User $user, Student $student): bool
     {
+        // Admin can delete any student
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        // Guardian can delete only their own children
+        if ($user->role === 'guardian') {
+            return $user->id === $student->guardian->user_id;
+        }
+
         return false;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, student $student): bool
+    public function restore(User $user, Student $student): bool
     {
-        return false;
+        return $this->delete($user, $student);
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, student $student): bool
+    public function forceDelete(User $user, Student $student): bool
     {
-        return false;
+        return $this->delete($user, $student);
     }
 }

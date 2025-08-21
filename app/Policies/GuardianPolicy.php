@@ -4,16 +4,23 @@ namespace App\Policies;
 
 use App\Models\Guardian;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class GuardianPolicy
 {
+    /**
+     * Check if the user has full access (admin or guardian).
+     */
+    private function hasFullAccess(User $user): bool
+    {
+        return in_array($user->role, ['admin', 'guardian']);
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -21,7 +28,7 @@ class GuardianPolicy
      */
     public function view(User $user, Guardian $guardian): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -29,7 +36,7 @@ class GuardianPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -37,7 +44,7 @@ class GuardianPolicy
      */
     public function update(User $user, Guardian $guardian): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -45,7 +52,7 @@ class GuardianPolicy
      */
     public function delete(User $user, Guardian $guardian): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -53,7 +60,7 @@ class GuardianPolicy
      */
     public function restore(User $user, Guardian $guardian): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -61,6 +68,6 @@ class GuardianPolicy
      */
     public function forceDelete(User $user, Guardian $guardian): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 }

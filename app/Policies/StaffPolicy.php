@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Staff;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\Staff;
 
 class StaffPolicy
 {
@@ -13,7 +12,7 @@ class StaffPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**
@@ -21,7 +20,7 @@ class StaffPolicy
      */
     public function view(User $user, Staff $staff): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**
@@ -29,7 +28,7 @@ class StaffPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**
@@ -37,7 +36,7 @@ class StaffPolicy
      */
     public function update(User $user, Staff $staff): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**
@@ -45,7 +44,7 @@ class StaffPolicy
      */
     public function delete(User $user, Staff $staff): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**
@@ -53,7 +52,7 @@ class StaffPolicy
      */
     public function restore(User $user, Staff $staff): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**
@@ -61,6 +60,6 @@ class StaffPolicy
      */
     public function forceDelete(User $user, Staff $staff): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 }

@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\Vehicle;
-use Illuminate\Auth\Access\Response;
 
 class VehiclePolicy
 {
@@ -13,7 +12,8 @@ class VehiclePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Admin, driver, caretaker, student, guardian can view vehicles
+        return in_array($user->role, ['admin', 'driver', 'caretaker', 'student', 'guardian']);
     }
 
     /**
@@ -21,7 +21,8 @@ class VehiclePolicy
      */
     public function view(User $user, Vehicle $vehicle): bool
     {
-        return false;
+        // Same as viewAny, all these roles can view
+        return in_array($user->role, ['admin', 'driver', 'caretaker', 'student', 'guardian']);
     }
 
     /**
@@ -29,7 +30,8 @@ class VehiclePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Only admin can create vehicles
+        return $user->role === 'admin';
     }
 
     /**
@@ -37,7 +39,8 @@ class VehiclePolicy
      */
     public function update(User $user, Vehicle $vehicle): bool
     {
-        return false;
+        // Only admin can update
+        return $user->role === 'admin';
     }
 
     /**
@@ -45,7 +48,8 @@ class VehiclePolicy
      */
     public function delete(User $user, Vehicle $vehicle): bool
     {
-        return false;
+        // Only admin can delete
+        return $user->role === 'admin';
     }
 
     /**
@@ -53,7 +57,7 @@ class VehiclePolicy
      */
     public function restore(User $user, Vehicle $vehicle): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**
@@ -61,6 +65,6 @@ class VehiclePolicy
      */
     public function forceDelete(User $user, Vehicle $vehicle): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 }

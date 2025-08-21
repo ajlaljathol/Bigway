@@ -9,11 +9,18 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+    public function __construct()
+    {
+        // This automatically applies StudentPolicy methods
+        $this->authorizeResource(Student::class, 'student');
+    }
+
     /**
      * Display a listing of students.
      */
     public function index()
     {
+        // Calls StudentPolicy::viewAny()
         $students = Student::with(['guardian', 'school'])->get();
         return view('students.index', compact('students'));
     }
@@ -23,6 +30,7 @@ class StudentController extends Controller
      */
     public function create()
     {
+        // Calls StudentPolicy::create()
         $guardians = Guardian::all();
         $schools = School::all();
         return view('students.create', compact('guardians', 'schools'));
@@ -33,6 +41,7 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
+        // Calls StudentPolicy::create()
         $request->validate([
             'name' => 'required|string|max:255',
             'emerg_contact' => 'required|integer',
@@ -40,8 +49,8 @@ class StudentController extends Controller
             'address' => 'required|string|max:255',
             'guardian_id' => 'required|exists:guardians,id',
             'school_id' => 'required|exists:schools,id',
-            'vehicle_id' => 'required|exists:vehciles,id',
-            'route_id' => 'requires|exists:routes,id',
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'route_id' => 'required|exists:routes,id',
         ]);
 
         Student::create($request->only([
@@ -63,6 +72,7 @@ class StudentController extends Controller
      */
     public function show(Student $student)
     {
+        // Calls StudentPolicy::view()
         return view('students.show', compact('student'));
     }
 
@@ -71,6 +81,7 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
+        // Calls StudentPolicy::update()
         $guardians = Guardian::all();
         $schools = School::all();
         return view('students.edit', compact('student', 'guardians', 'schools'));
@@ -81,6 +92,7 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        // Calls StudentPolicy::update()
         $request->validate([
             'name' => 'required|string|max:255',
             'emerg_contact' => 'required|integer',
@@ -88,11 +100,11 @@ class StudentController extends Controller
             'address' => 'required|string|max:255',
             'guardian_id' => 'required|exists:guardians,id',
             'school_id' => 'required|exists:schools,id',
-            'vehicle_id' => 'required|exists:vehciles,id',
-            'route_id' => 'requires|exists:routes,id',
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'route_id' => 'required|exists:routes,id',
         ]);
 
-        Student::update($request->only([
+        $student->update($request->only([
             'name',
             'emerg_contact',
             'blood_grp',
@@ -111,6 +123,7 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
+        // Calls StudentPolicy::delete()
         $student->delete();
         return redirect()->route('students.index')->with('success', 'Student deleted successfully.');
     }

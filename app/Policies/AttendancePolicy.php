@@ -4,16 +4,23 @@ namespace App\Policies;
 
 use App\Models\Attendance;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AttendancePolicy
 {
+    /**
+     * Check if the user has full access (admin or caretaker).
+     */
+    private function hasFullAccess(User $user): bool
+    {
+        return in_array($user->role, ['admin', 'caretaker']);
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -21,7 +28,7 @@ class AttendancePolicy
      */
     public function view(User $user, Attendance $attendance): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -29,7 +36,7 @@ class AttendancePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -37,7 +44,7 @@ class AttendancePolicy
      */
     public function update(User $user, Attendance $attendance): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -45,7 +52,7 @@ class AttendancePolicy
      */
     public function delete(User $user, Attendance $attendance): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -53,7 +60,7 @@ class AttendancePolicy
      */
     public function restore(User $user, Attendance $attendance): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 
     /**
@@ -61,6 +68,6 @@ class AttendancePolicy
      */
     public function forceDelete(User $user, Attendance $attendance): bool
     {
-        return false;
+        return $this->hasFullAccess($user);
     }
 }

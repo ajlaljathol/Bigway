@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -21,7 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-      //  'role',
+        'role',
     ];
 
     /**
@@ -46,28 +45,34 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-   public function Guardian()
+
+    public function isAdmin(): bool
     {
-        return $this->hasOne(User::class);
+        return $this->role === 'admin';
     }
 
-    public function Expense()
+    public function isDriver(): bool
     {
-        return $this->belongsTo(User::class);
+        return $this->role === 'driver';
     }
 
-    public function Caretaker()
+    public function isGuardian(): bool
     {
-        return $this->hasOne(User::class);
+        return $this->role === 'guardian';
     }
 
-    public function Admin()
+    public function isCaretaker(): bool
     {
-        return $this->hasOne(User::class);
+        return $this->role === 'caretaker';
     }
 
-    public function Driver()
+    public function isStudent(): bool
     {
-        return $this->hasOne(User::class);
+        return $this->role === 'student';
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
     }
 }
