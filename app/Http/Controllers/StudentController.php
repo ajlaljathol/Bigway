@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\Guardian;
 use App\Models\School;
+use App\Models\Vehicle;
+use App\Models\Route as BusRoute;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {
@@ -31,9 +34,12 @@ class StudentController extends Controller
     public function create()
     {
         // Calls StudentPolicy::create()
-        $guardians = Guardian::all();
         $schools = School::all();
-        return view('students.create', compact('guardians', 'schools'));
+        $vehicles = Vehicle::all();
+        $routes = BusRoute::all();
+        $isGuardian = Auth::user()->role === 'guardian';
+        $guardians = $isGuardian ? null : Guardian::all();
+        return view('students.create', compact('schools', 'vehicles', 'routes', 'isGuardian', 'guardians'));
     }
 
     /**
@@ -42,27 +48,41 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         // Calls StudentPolicy::create()
-        $request->validate([
+        $isGuardian = Auth::user()->role === 'guardian';
+
+        $rules = [
             'name' => 'required|string|max:255',
             'emerg_contact' => 'required|integer',
             'blood_grp' => 'required|string|max:5',
             'address' => 'required|string|max:255',
-            'guardian_id' => 'required|exists:guardians,id',
             'school_id' => 'required|exists:schools,id',
             'vehicle_id' => 'required|exists:vehicles,id',
             'route_id' => 'required|exists:routes,id',
-        ]);
+        ];
 
-        Student::create($request->only([
+        if (!$isGuardian) {
+            $rules['guardian_id'] = 'required|exists:guardians,id';
+        }
+
+        $request->validate($rules);
+
+        $data = $request->only([
             'name',
             'emerg_contact',
             'blood_grp',
             'address',
-            'guardian_id',
             'school_id',
             'vehicle_id',
             'route_id',
-        ]));
+        ]);
+
+        if ($isGuardian) {
+            $data['guardian_id'] = Auth::user()->guardian->id;
+        } else {
+            $data['guardian_id'] = $request->guardian_id;
+        }
+
+        Student::create($data);
 
         return redirect()->route('students.index')->with('success', 'Student created successfully.');
     }
@@ -82,9 +102,12 @@ class StudentController extends Controller
     public function edit(Student $student)
     {
         // Calls StudentPolicy::update()
-        $guardians = Guardian::all();
         $schools = School::all();
-        return view('students.edit', compact('student', 'guardians', 'schools'));
+        $vehicles = Vehicle::all();
+        $routes = BusRoute::all();
+        $isGuardian = Auth::user()->role === 'guardian';
+        $guardians = $isGuardian ? null : Guardian::all();
+        return view('students.edit', compact('student', 'schools', 'vehicles', 'routes', 'isGuardian', 'guardians'));
     }
 
     /**
@@ -93,27 +116,41 @@ class StudentController extends Controller
     public function update(Request $request, Student $student)
     {
         // Calls StudentPolicy::update()
-        $request->validate([
+        $isGuardian = Auth::user()->role === 'guardian';
+
+        $rules = [
             'name' => 'required|string|max:255',
             'emerg_contact' => 'required|integer',
             'blood_grp' => 'required|string|max:5',
             'address' => 'required|string|max:255',
-            'guardian_id' => 'required|exists:guardians,id',
             'school_id' => 'required|exists:schools,id',
             'vehicle_id' => 'required|exists:vehicles,id',
             'route_id' => 'required|exists:routes,id',
-        ]);
+        ];
 
-        $student->update($request->only([
+        if (!$isGuardian) {
+            $rules['guardian_id'] = 'required|exists:guardians,id';
+        }
+
+        $request->validate($rules);
+
+        $data = $request->only([
             'name',
             'emerg_contact',
             'blood_grp',
             'address',
-            'guardian_id',
             'school_id',
             'vehicle_id',
             'route_id',
-        ]));
+        ]);
+
+        if ($isGuardian) {
+            $data['guardian_id'] = Auth::user()->guardian->id;
+        } else {
+            $data['guardian_id'] = $request->guardian_id;
+        }
+
+        $student->update($data);
 
         return redirect()->route('students.index')->with('success', 'Student updated successfully.');
     }

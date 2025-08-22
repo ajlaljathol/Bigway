@@ -19,7 +19,7 @@ class student extends Model
         'school_id',
     ];
 
-    public function School()
+    public function school()
     {
         return $this->belongsTo(student::class);
     }

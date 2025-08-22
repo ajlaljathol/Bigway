@@ -6,6 +6,15 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\SchoolController;
+use App\Http\Controllers\CaretakerController;
+use App\Http\Controllers\DriverController;
+use App\Http\Controllers\SalaryController;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\RouteController;
+use App\Models\Caretaker;
 
 // Home route
 Route::get('/', function () {
@@ -16,11 +25,24 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// Student resource routes (with policy enforcement in controller)
 Route::resource('students', StudentController::class);
 
-// Guardian resource routes (if you have a GuardianController)
 Route::resource('guardians', GuardianController::class);
 
-// School resource routes (if you have a SchoolController)
 Route::resource('schools', SchoolController::class);
+
+Route::resource('caretakers', CaretakerController::class);
+
+Route::resource('drivers', DriverController::class);
+
+Route::resource('salaries', SalaryController::class);
+
+Route::resource('vehicles', VehicleController::class);
+
+Route::resource('attendances', AttendanceController::class);
+
+Route::resource('staffs', StaffController::class);
+
+Route::resource('expenses', ExpenseController::class);
+
+Route::resource('routes', RouteController::class);
