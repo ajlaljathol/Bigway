@@ -13,30 +13,25 @@
             </div>
 
             <div class="mb-3">
-                <label for="age" class="form-label">Age</label>
-                <input type="number" class="form-control" id="age" name="age" required>
+                <label for="emergency_contact" class="form-label">Emergency Contact</label>
+                <input type="text" class="form-control" id="emergency_contact" name="emergency_contact" required>
             </div>
 
             <div class="mb-3">
-                <label for="emerg_contact" class="form-label">Emergency Contact</label>
-                <input type="text" class="form-control" id="emerg_contact" name="emerg_contact" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="blood_grp" class="form-label">Blood Group</label>
-                <input type="text" class="form-control" id="blood_grp" name="blood_grp" required>
+                <label for="blood_group" class="form-label">Blood Group</label>
+                <input type="text" class="form-control" id="blood_group" name="blood_group">
             </div>
 
             <div class="mb-3">
                 <label for="address" class="form-label">Address</label>
-                <input type="text" class="form-control" id="address" name="address" required>
+                <input type="text" class="form-control" id="address" name="address">
             </div>
 
-            @if(isset($isGuardian) && $isGuardian)
+            @if (isset($isGuardian) && $isGuardian)
                 @php
                     $guardianModel = auth()->user()->guardian ?? null;
                 @endphp
-                @if($guardianModel)
+                @if ($guardianModel)
                     <input type="hidden" name="guardian_id" value="{{ $guardianModel->id }}">
                 @else
                     <div class="alert alert-danger">
@@ -48,7 +43,7 @@
                     <label for="guardian_id" class="form-label">Guardian</label>
                     <select class="form-control" id="guardian_id" name="guardian_id" required>
                         <option value="">Select Guardian</option>
-                        @foreach($guardians as $guardian)
+                        @foreach ($guardians as $guardian)
                             <option value="{{ $guardian->id }}">{{ $guardian->name }}</option>
                         @endforeach
                     </select>
@@ -59,7 +54,7 @@
                 <label for="school_id" class="form-label">School</label>
                 <select class="form-control" id="school_id" name="school_id" required>
                     <option value="">Select School</option>
-                    @foreach($schools as $school)
+                    @foreach ($schools as $school)
                         <option value="{{ $school->id }}">{{ $school->name }}</option>
                     @endforeach
                 </select>
@@ -67,20 +62,10 @@
 
             <div class="mb-3">
                 <label for="vehicle_id" class="form-label">Vehicle</label>
-                <select class="form-control" id="vehicle_id" name="vehicle_id" required>
+                <select class="form-control" id="vehicle_id" name="vehicle_id">
                     <option value="">Select Vehicle</option>
-                    @foreach($vehicles as $vehicle)
+                    @foreach ($vehicles as $vehicle)
                         <option value="{{ $vehicle->id }}">{{ $vehicle->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="route_id" class="form-label">Route</label>
-                <select class="form-control" id="route_id" name="route_id" required>
-                    <option value="">Select Route</option>
-                    @foreach($routes as $route)
-                        <option value="{{ $route->id }}">{{ $route->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -89,3 +74,4 @@
         </form>
     </div>
 @endsection
+F

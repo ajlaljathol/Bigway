@@ -12,20 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->id(); // auto-increment primary key
             $table->string('name');
-            $table->integer('emerg_contact');
-            $table->string('blood_grp');
+            $table->string('emergency_contact'); // changed from emerg_contact for consistency
+            $table->string('blood_group');       // changed from blood_grp for clarity
             $table->string('address');
+
+            // Foreign keys
             $table->unsignedBigInteger('guardian_id');
             $table->unsignedBigInteger('school_id');
-            $table->unsignedBigInteger('vehicles_id');
+            $table->unsignedBigInteger('vehicle_id'); // fixed naming (singular)
 
-            //Foreign-Keys
+            $table->timestamps();
+
+            // Constraints
             $table->foreign('guardian_id')->references('id')->on('guardians')->onDelete('cascade');
             $table->foreign('school_id')->references('id')->on('schools')->onDelete('cascade');
-            $table->foreign('vehicles_id')->references('id')->on('vehicles')->onDelete('cascade');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles')->onDelete('cascade');
         });
     }
 

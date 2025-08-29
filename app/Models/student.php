@@ -5,37 +5,49 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class student extends Model
+class Student extends Model
 {
-    /** @use HasFactory<\Database\Factories\StudentFactory> */
     use HasFactory;
 
-    protected $fillabel = [
+    protected $fillable = [
         'name',
         'emergency_contact',
         'blood_group',
         'address',
         'guardian_id',
         'school_id',
+        'vehicle_id',
     ];
 
+    /**
+     * A student belongs to a school.
+     */
     public function school()
     {
-        return $this->belongsTo(student::class);
+        return $this->belongsTo(School::class);
     }
 
-    public function Guardian()
+    /**
+     * A student belongs to a guardian.
+     */
+    public function guardian()
     {
-        return $this->belongsTo(student::class);
+        return $this->belongsTo(Guardian::class);
     }
 
-    public function Vehicle()
+    /**
+     * A student belongs to a vehicle.
+     */
+    public function vehicle()
     {
-        return $this->hasOne(student::class);
+        return $this->belongsTo(Vehicle::class);
     }
 
-    public function Attendance()
+    /**
+     * A student has many attendance records.
+     */
+    public function attendances()
     {
-        return $this->hasOne(student::class);
+        return $this->hasMany(Attendance::class);
     }
 }

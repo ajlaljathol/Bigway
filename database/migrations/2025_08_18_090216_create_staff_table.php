@@ -13,13 +13,19 @@ return new class extends Migration
     {
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->string('name');
-            $table->string('position');
-           // $table->unsignedBigInteger('salary_id');
+            $table->enum('role', ['Caretaker', 'Driver', 'Other'])->default('Caretaker');
+            $table->string('position')->nullable(); // can keep for job title details if needed
+            $table->string('phone')->nullable();
+            $table->string('cnic')->nullable();
+            $table->string('address')->nullable();
+            $table->unsignedBigInteger('salary_id')->nullable();
+            $table->unsignedBigInteger('vehicle_id')->nullable();
+            $table->timestamps();
 
-            //Foreign-Key
-           // $table->foreign('salary_id')->references('id')->on('salaries')->onDelete('cascade');
+            // Relationships
+            $table->foreign('salary_id')->references('id')->on('salaries')->onDelete('set null');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles')->onDelete('set null');
         });
     }
 

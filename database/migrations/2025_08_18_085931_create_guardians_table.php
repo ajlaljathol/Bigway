@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('guardians', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->string('name');
             $table->string('address');
-            $table->integer('num_students');
-            $table->string('gender');
+            $table->enum('gender', ['male', 'female', 'other']); // safer than string
+            $table->string('relation'); // e.g. father, mother, uncle
+            $table->string('contact_number'); // guardian’s phone number
             $table->unsignedBigInteger('user_id');
+            $table->timestamps();
 
-            //foreign-Keys
+            // Foreign key
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

@@ -17,27 +17,20 @@ class UserSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Driver User',
-            'email' => 'driver@example.com',
+            'name' => 'Staff User',
+            'email' => 'staff@example.com',
             'password' => bcrypt('password'),
-            'role' => 'driver',
+            'role' => 'staff',   // ✅ changed
         ]);
 
-                User::create([
-            'name' => 'Caretaker User',
-            'email' => 'caretaker@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'caretaker',
-        ]);
-
-                User::create([
+        User::create([
             'name' => 'Guardian User',
             'email' => 'guardian@example.com',
             'password' => bcrypt('password'),
             'role' => 'guardian',
         ]);
 
-                User::create([
+        User::create([
             'name' => 'Student User',
             'email' => 'student@example.com',
             'password' => bcrypt('password'),

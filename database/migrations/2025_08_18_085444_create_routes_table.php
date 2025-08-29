@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('routes', function (Blueprint $table) {
-            $table->id();
+            $table->id()->primary();
             $table->timestamps();
-            $table->time('starting_time');
-            $table->integer('total_distance');
+            $table->time('starting_time')->nullable();
+            $table->integer('total_distance')->nullable();
            // $table->unsignedInteger('vehicle_id');
 
             //Foreign-Keys

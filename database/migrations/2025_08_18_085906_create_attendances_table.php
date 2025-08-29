@@ -14,17 +14,21 @@ return new class extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+
             $table->unsignedBigInteger('vehicle_id');
             $table->unsignedBigInteger('student_id');
+            $table->unsignedBigInteger('school_id')->nullable(); // Optional if needed
             $table->date('date');
-            $table->string('home_pickup');
-            $table->string('school_pickup');
-            $table->string('home_drop');
-            $table->string('school_drop');
+            $table->string('home_pickup')->nullable();
+            $table->string('school_pickup')->nullable();
+            $table->string('home_drop')->nullable();
+            $table->string('school_drop')->nullable();
+            $table->enum('status', ['present', 'absent'])->default('absent'); // Track presence
 
-            //Foreign-keys
+            // Foreign-keys
             $table->foreign('vehicle_id')->references('id')->on('vehicles')->onDelete('cascade');
-            $table->foreign('student_id')->references('id')->on('schools')->onDelete('cascade');
+            $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
+            $table->foreign('school_id')->references('id')->on('schools')->onDelete('set null');
         });
     }
 

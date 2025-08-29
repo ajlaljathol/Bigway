@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
 use App\Models\School;
-use App\Models\Caretaker;
-use App\Models\Driver;
+use App\Models\Staff;
+use App\Models\Route;
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
@@ -15,7 +15,7 @@ class VehicleController extends Controller
      */
     public function index()
     {
-        $vehicles = Vehicle::with(['school', 'caretaker', 'driver'])->get();
+        $vehicles = Vehicle::with(['school', 'caretaker', 'driver', 'route'])->get();
         return view('vehicles.index', compact('vehicles'));
     }
 
@@ -25,9 +25,10 @@ class VehicleController extends Controller
     public function create()
     {
         $schools = School::all();
-        $caretakers = Caretaker::all();
-        $drivers = Driver::all();
-        return view('vehicles.create', compact('schools', 'caretakers', 'drivers'));
+        $routes  = Route::all();
+        $staff   = Staff::all(); // ✅ Single variable for caretakers & drivers
+
+        return view('vehicles.create', compact('schools', 'routes', 'staff'));
     }
 
     /**
@@ -40,8 +41,8 @@ class VehicleController extends Controller
             'school_id'    => 'required|exists:schools,id',
             'route_id'     => 'required|exists:routes,id',
             'ownership'    => 'required|string|max:255',
-            'caretaker_id' => 'required|exists:caretakers,id',
-            'driver_id'    => 'required|exists:drivers,id',
+            'caretaker_id' => 'required|exists:staff,id',
+            'driver_id'    => 'required|exists:staff,id',
             'reg_number'   => 'required|string|max:255|unique:vehicles,reg_number',
             'rent'         => 'required|numeric|min:0',
             'vehicle_type' => 'required|string|max:255',
@@ -76,9 +77,10 @@ class VehicleController extends Controller
     public function edit(Vehicle $vehicle)
     {
         $schools = School::all();
-        $caretakers = Caretaker::all();
-        $drivers = Driver::all();
-        return view('vehicles.edit', compact('vehicle', 'schools', 'caretakers', 'drivers'));
+        $routes  = Route::all();
+        $staff   = Staff::all(); // ✅ Same fix for edit form
+
+        return view('vehicles.edit', compact('vehicle', 'schools', 'routes', 'staff'));
     }
 
     /**
@@ -91,8 +93,8 @@ class VehicleController extends Controller
             'school_id'    => 'required|exists:schools,id',
             'route_id'     => 'required|exists:routes,id',
             'ownership'    => 'required|string|max:255',
-            'caretaker_id' => 'required|exists:caretakers,id',
-            'driver_id'    => 'required|exists:drivers,id',
+            'caretaker_id' => 'required|exists:staff,id',
+            'driver_id'    => 'required|exists:staff,id',
             'reg_number'   => 'required|string|max:255|unique:vehicles,reg_number,' . $vehicle->id,
             'rent'         => 'required|numeric|min:0',
             'vehicle_type' => 'required|string|max:255',
@@ -101,7 +103,7 @@ class VehicleController extends Controller
         $vehicle->update($request->only([
             'num_seats',
             'school_id',
-            'route_id',
+            'route_id' ,
             'ownership',
             'caretaker_id',
             'driver_id',

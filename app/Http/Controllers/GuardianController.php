@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Guardian;
 use App\Models\Student;
+use App\Models\School;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,143 +13,84 @@ class GuardianController extends Controller
 {
     public function __construct()
     {
-        // Apply policy automatically for all resource methods
         $this->authorizeResource(Guardian::class, 'guardian');
     }
 
     /**
-     * Display a listing of guardians.
+     * Show all guardians.
      */
     public function index()
     {
-        $this->authorize('viewAny', Guardian::class);
-
-        $guardians = Guardian::withCount('students')->latest()->get();
+        $guardians = Guardian::with('students')->latest()->paginate(15);
         return view('guardians.index', compact('guardians'));
     }
 
     /**
-     * Show the form for creating a new guardian.
+     * Show the form for creating guardian + student(s).
      */
     public function create()
     {
-        $this->authorize('create', Guardian::class);
+        $schools  = School::all();
+        $vehicles = Vehicle::all();
 
-        return view('guardians.create');
+        return view('guardians.create', compact('schools', 'vehicles'));
     }
 
     /**
-     * Store a newly created guardian in storage.
+     * Store guardian + student(s).
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Guardian::class);
-
         $request->validate([
-            'name'    => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'gender'  => 'required|in:male,female,other',
-            'students.*.name'   => 'sometimes|string|max:255',
-            'students.*.gender' => 'sometimes|in:male,female,other',
-            'students.*.age'    => 'sometimes|integer|min:1',
+            // Guardian fields
+            'name'           => 'required|string|max:255',
+            'address'        => 'required|string|max:500',
+            'gender'         => 'required|in:male,female,other',
+            'relation'       => 'required|string|max:100',
+            'contact_number' => 'required|string|max:20',
+
+            // Student fields
+            'students'                     => 'required|array|min:1',
+            'students.*.name'              => 'required|string|max:255',
+            'students.*.emergency_contact' => 'required|string|max:20',
+            'students.*.blood_group'       => 'nullable|string|max:5',
+            'students.*.address'           => 'nullable|string|max:500',
+            'students.*.school_id'         => 'required|exists:schools,id',
+            'students.*.vehicle_id'        => 'required|exists:vehicles,id', // must be required because migration demands it
         ]);
 
+        // Step 1: Create guardian
         $guardian = Guardian::create([
-            'name'    => $request->name,
-            'address' => $request->address,
-            'gender'  => $request->gender,
-            'user_id' => Auth::id(),
+            'name'           => $request->name,
+            'address'        => $request->address,
+            'gender'         => $request->gender,
+            'relation'       => $request->relation,
+            'contact_number' => $request->contact_number,
+            'user_id'        => Auth::id(),
         ]);
 
-        if ($request->has('students')) {
-            foreach ($request->students as $studentData) {
-                if (!empty($studentData['name'])) {
-                    Student::create([
-                        'name'        => $studentData['name'],
-                        'gender'      => $studentData['gender'] ?? null,
-                        'age'         => $studentData['age'] ?? null,
-                        'guardian_id' => $guardian->id,
-                    ]);
-                }
-            }
+        // Step 2: Create linked students
+        foreach ($request->students as $studentData) {
+            Student::create([
+                'name'              => $studentData['name'],
+                'emergency_contact' => $studentData['emergency_contact'],
+                'blood_group'       => $studentData['blood_group'] ?? null,
+                'address'           => $studentData['address'] ?? null,
+                'school_id'         => $studentData['school_id'],
+                'vehicle_id'        => $studentData['vehicle_id'], // no longer nullable
+                'guardian_id'       => $guardian->id,
+            ]);
         }
 
-        return redirect()->route('guardians.index')->with('success', 'Guardian and children added successfully.');
+        return redirect()->route('guardians.index')
+            ->with('success', 'Guardian and student(s) created successfully.');
     }
 
-    /**
-     * Display the specified guardian.
-     */
     public function show(Guardian $guardian)
     {
-        $this->authorize('view', $guardian);
+        // Eager load related students, their school, and vehicle
+        $guardian->load(['students.school', 'students.vehicle']);
 
-        $guardian->load('students');
         return view('guardians.show', compact('guardian'));
-    }
-
-    /**
-     * Show the form for editing the specified guardian.
-     */
-    public function edit(Guardian $guardian)
-    {
-        $this->authorize('update', $guardian);
-
-        $guardian->load('students');
-        return view('guardians.edit', compact('guardian'));
-    }
-
-    /**
-     * Update the specified guardian in storage.
-     */
-    public function update(Request $request, Guardian $guardian)
-    {
-        $this->authorize('update', $guardian);
-
-        $request->validate([
-            'name'    => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'gender'  => 'required|in:male,female,other',
-            'students.*.name'   => 'sometimes|string|max:255',
-            'students.*.gender' => 'sometimes|in:male,female,other',
-            'students.*.age'    => 'sometimes|integer|min:1',
-        ]);
-
-        $guardian->update([
-            'name'    => $request->name,
-            'address' => $request->address,
-            'gender'  => $request->gender,
-        ]);
-
-        if ($request->has('students')) {
-            foreach ($request->students as $studentData) {
-                if (!empty($studentData['id'])) {
-                    $student = Student::find($studentData['id']);
-                    if ($student && $student->guardian_id == $guardian->id) {
-                        $student->update($studentData);
-                    }
-                } elseif (!empty($studentData['name'])) {
-                    Student::create([
-                        'name'        => $studentData['name'],
-                        'gender'      => $studentData['gender'] ?? null,
-                        'age'         => $studentData['age'] ?? null,
-                        'guardian_id' => $guardian->id,
-                    ]);
-                }
-            }
-        }
-
-        return redirect()->route('guardians.index')->with('success', 'Guardian updated successfully.');
-    }
-
-    /**
-     * Remove the specified guardian from storage.
-     */
-    public function destroy(Guardian $guardian)
-    {
-        $this->authorize('delete', $guardian);
-
-        $guardian->delete();
-        return redirect()->route('guardians.index')->with('success', 'Guardian deleted successfully.');
     }
 }

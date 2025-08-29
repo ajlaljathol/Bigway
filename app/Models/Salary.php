@@ -7,25 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class Salary extends Model
 {
-    /** @use HasFactory<\Database\Factories\SalaryFactory> */
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'position',
         'staff_id',
-        'salary',
+        'amount',
         'date',
-        'expense_id',
     ];
 
-    public function Staff()
+    /**
+     * Salary belongs to a Staff member
+     */
+    public function staff()
     {
-        return $this->hasOne(Salary::class);
+        return $this->belongsTo(Staff::class);
     }
 
-    public function Expense()
+    /**
+     * Salary has one Expense (created automatically)
+     */
+    public function expense()
     {
-        return $this->hasOne( Salary::class);
+        return $this->belongsTo(Expense::class);
     }
 }

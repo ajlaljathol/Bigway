@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
 {
-    /** @use HasFactory<\Database\Factories\AttendanceFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -19,14 +18,30 @@ class Attendance extends Model
         'school_pickup',
         'home_drop',
         'school_drop',
+        'status', // present or absent
     ];
 
+    /**
+     * Attendance belongs to a student.
+     */
     public function student()
     {
-        return $this->hasOne( Attendance::class);
+        return $this->belongsTo(Student::class, 'student_id');
     }
-    public function Route()
+
+    /**
+     * Attendance belongs to a school.
+     */
+    public function school()
     {
-        return $this->hasOne( Attendance::class);
+        return $this->belongsTo(School::class, 'school_id');
+    }
+
+    /**
+     * Attendance belongs to a vehicle.
+     */
+    public function vehicle()
+    {
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 }

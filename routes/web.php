@@ -39,10 +39,17 @@ Route::resource('salaries', SalaryController::class);
 
 Route::resource('vehicles', VehicleController::class);
 
-Route::resource('attendances', AttendanceController::class);
+Route::resource('attendance', AttendanceController::class);
 
-Route::resource('staffs', StaffController::class);
+Route::resource('staff', StaffController::class);
 
 Route::resource('expenses', ExpenseController::class);
 
 Route::resource('routes', RouteController::class);
+
+// AttendanceController extra route
+Route::get('/attendance/students/{vehicle}', [AttendanceController::class, 'getStudents'])
+    ->name('attendance.getStudents');
+
+
+

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Staff;
+use App\Models\Salary;
+use App\Models\Vehicle;
+use App\Models\Caretaker;
 use Illuminate\Http\Request;
 
 class StaffController extends Controller
@@ -12,7 +15,9 @@ class StaffController extends Controller
      */
     public function index()
     {
-        $staff = Staff::all();
+        // Eager-load salary and vehicle
+        $staff = Staff::with(['salary', 'vehicle'])->latest()->get();
+
         return view('staff.index', compact('staff'));
     }
 
@@ -21,7 +26,10 @@ class StaffController extends Controller
      */
     public function create()
     {
-        return view('staff.create');
+        $salaries = Salary::all();
+        $vehicles = Vehicle::all();
+
+        return view('staff.create', compact('salaries', 'vehicles'));
     }
 
     /**
@@ -30,11 +38,35 @@ class StaffController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'position' => 'required|string|max:255',
+            'name'      => 'required|string|max:255',
+            'role'      => 'required|string|max:50',
+            'position'  => 'nullable|string|max:255',
+            'cnic'      => 'nullable|string|max:15',
+            'phone'     => 'nullable|string|max:20',
+            'address'   => 'nullable|string|max:255',
+            'salary_id' => 'nullable|exists:salaries,id',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
         ]);
 
-        Staff::create($request->only(['name', 'position']));
+        $staff = Staff::create($request->only([
+            'name',
+            'role',
+            'position',
+            'cnic',
+            'phone',
+            'address',
+            'salary_id',
+            'vehicle_id'
+        ]));
+
+        // If staff is a caretaker, also create caretaker record
+        if (strtolower($staff->position) === 'caretaker') {
+            Caretaker::create([
+                'staff_id'   => $staff->id,
+                'salary_id'  => $staff->salary_id,
+                'vehicle_id' => $staff->vehicle_id,
+            ]);
+        }
 
         return redirect()->route('staff.index')->with('success', 'Staff member created successfully.');
     }
@@ -44,6 +76,7 @@ class StaffController extends Controller
      */
     public function show(Staff $staff)
     {
+        $staff->load(['salary', 'vehicle']);
         return view('staff.show', compact('staff'));
     }
 
@@ -52,7 +85,10 @@ class StaffController extends Controller
      */
     public function edit(Staff $staff)
     {
-        return view('staff.edit', compact('staff'));
+        $salaries = Salary::all();
+        $vehicles = Vehicle::all();
+
+        return view('staff.edit', compact('staff', 'salaries', 'vehicles'));
     }
 
     /**
@@ -61,14 +97,43 @@ class StaffController extends Controller
     public function update(Request $request, Staff $staff)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'position' => 'required|string|max:255',
+            'name'      => 'required|string|max:255',
+            'role'      => 'required|string|max:50',
+            'position'  => 'nullable|string|max:255',
+            'cnic'      => 'nullable|string|max:15',
+            'phone'     => 'nullable|string|max:20',
+            'address'   => 'nullable|string|max:255',
+            'salary_id' => 'nullable|exists:salaries,id',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
         ]);
 
-        $staff->update($request->only(['name', 'position']));
+        $staff->update($request->only([
+            'name',
+            'role',
+            'position',
+            'cnic',
+            'phone',
+            'address',
+            'salary_id',
+            'vehicle_id'
+        ]));
+
+        if (strtolower($staff->position) === 'caretaker') {
+            Caretaker::updateOrCreate(
+                ['staff_id' => $staff->id],
+                [
+                    'salary_id'  => $staff->salary_id,
+                    'vehicle_id' => $staff->vehicle_id,
+                ]
+            );
+        } else {
+            // if staff changed role away from caretaker, remove caretaker record
+            $staff->caretaker()?->delete();
+        }
 
         return redirect()->route('staff.index')->with('success', 'Staff member updated successfully.');
     }
+
 
     /**
      * Remove the specified staff member from storage.
@@ -76,7 +141,6 @@ class StaffController extends Controller
     public function destroy(Staff $staff)
     {
         $staff->delete();
-
         return redirect()->route('staff.index')->with('success', 'Staff member deleted successfully.');
     }
 }

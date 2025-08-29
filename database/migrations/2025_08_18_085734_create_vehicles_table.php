@@ -16,17 +16,18 @@ return new class extends Migration
             $table->integer('num_seats');
             $table->unsignedBigInteger('school_id');
             $table->string('ownership');
-            $table->unsignedBigInteger('caretaker_id');
-            $table->unsignedBigInteger('driver_id');
+            $table->unsignedBigInteger('caretaker_id')->nullable();
+            $table->unsignedBigInteger('driver_id')->nullable();
             $table->unsignedBigInteger('route_id');
-            $table->string('reg_number');
-            $table->decimal('rent', 10, 2);
+            $table->string('reg_number')->unique();
+            $table->decimal('rent', 10, 2)->nullable();
             $table->string('vehicle_type');
+            $table->timestamps();
 
-            //Foreign-Keys
+            // Foreign Keys
             $table->foreign('school_id')->references('id')->on('schools')->onDelete('cascade');
-            $table->foreign('caretaker_id')->references('id')->on('caretakers')->onDelete('cascade');
-            $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('cascade');
+            $table->foreign('caretaker_id')->references('id')->on('staff')->onDelete('set null');
+            $table->foreign('driver_id')->references('id')->on('staff')->onDelete('set null');
             $table->foreign('route_id')->references('id')->on('routes')->onDelete('cascade');
         });
     }

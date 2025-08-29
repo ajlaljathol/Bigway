@@ -4,33 +4,39 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Caretaker extends Model
 {
-    /** @use HasFactory<\Database\Factories\CaretakerFactory> */
     use HasFactory;
 
     protected $fillable = [
         'name',
         'staff_id',
-        'user_id',
         'salary_id',
         'vehicle_id',
     ];
 
-    public function Vehicle()
+    /**
+     * A caretaker belongs to a staff entry.
+     */
+    public function staff()
     {
-        return $this->belongsTo( Caretaker::class);
+        return $this->belongsTo(Staff::class);
     }
 
-    public function Salary()
+    /**
+     * A caretaker belongs to a salary.
+     */
+    public function salary()
     {
-        return $this->hasOne(Caretaker::class);
+        return $this->belongsTo(Salary::class);
     }
 
-    public function User()
+    /**
+     * A caretaker belongs to a vehicle.
+     */
+    public function vehicle()
     {
-        return $this->hasOne(Caretaker::class);
+        return $this->belongsTo(Vehicle::class);
     }
 }

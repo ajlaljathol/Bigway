@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('salaries', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
-            $table->unsignedBigInteger('staff_id');
-            $table->unsignedBigInteger('expense_id');
-            $table->integer('salary');
+            $table->unsignedBigInteger('staff_id'); // salary belongs to staff
+            $table->unsignedBigInteger('expense_id')->nullable();
+            $table->integer('amount'); // amount
             $table->date('date');
+            $table->timestamps();
 
-            //Foreign-Key
-            $table->foreign('expense_id')->references('id')->on('expenses')->onDelete('cascade');
+            // Foreign Keys
+            $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
+            $table->foreign('expense_id')->references('id')->on('expenses')->onDelete('set null');
         });
     }
 

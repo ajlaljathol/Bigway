@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Driver;
-use App\Models\Vehicle;
 use App\Models\Staff;
 use App\Models\User;
 use App\Models\Salary;
@@ -19,57 +18,75 @@ class DriverController extends Controller
 
     public function create()
     {
-        //$vehicles = Vehicle::all();
-        $staff = Staff::all();
         $users = User::all();
         $salaries = Salary::all();
 
-        return view('drivers.create', compact( 'staff', 'users', 'salaries'));
+        return view('drivers.create', compact('users', 'salaries'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'       => 'required|string|max:255',
-           // 'vehicle_id' => 'nullable|exists:vehicles,id',
-            'staff_id'   => 'nullable|exists:staff,id',
-            'user_id'    => 'nullable|exists:users,id',
-            'salary_id'  => 'nullable|exists:salaries,id',
+            'name'      => 'required|string|max:255',
+            'user_id'   => 'nullable|exists:users,id',
+            'salary_id' => 'nullable|exists:salaries,id',
         ]);
 
-        Driver::create($request->only(['name','staff_id', 'user_id', 'salary_id']));
+        $staff = Staff::create([
+            'name'     => $request->name,
+            'position' => 'Driver',
+        ]);
+
+        Driver::create([
+            'name'      => $request->name,
+            'staff_id'  => $staff->id,
+            'user_id'   => $request->user_id,
+            'salary_id' => $request->salary_id,
+        ]);
 
         return redirect()->route('drivers.index')->with('success', 'Driver added successfully.');
     }
 
     public function edit(Driver $driver)
     {
-        //$vehicles = Vehicle::all();
-        $staff = Staff::all();
         $users = User::all();
         $salaries = Salary::all();
 
-        return view('drivers.edit', compact('driver', 'staff', 'users', 'salaries'));
+        return view('drivers.edit', compact('driver', 'users', 'salaries'));
     }
 
     public function update(Request $request, Driver $driver)
     {
         $request->validate([
-            'name'       => 'required|string|max:255',
-            //'vehicle_id' => 'nullable|exists:vehicles,id',
-            'staff_id'   => 'nullable|exists:staff,id',
-            'user_id'    => 'nullable|exists:users,id',
-            'salary_id'  => 'nullable|exists:salaries,id',
+            'name'      => 'required|string|max:255',
+            'user_id'   => 'nullable|exists:users,id',
+            'salary_id' => 'nullable|exists:salaries,id',
         ]);
 
-        $driver->update($request->only(['name','staff_id', 'user_id', 'salary_id']));
+        $driver->update([
+            'name'      => $request->name,
+            'user_id'   => $request->user_id,
+            'salary_id' => $request->salary_id,
+        ]);
+
+        if ($driver->staff) {
+            $driver->staff->update([
+                'name'     => $request->name,
+                'position' => 'Driver',
+            ]);
+        }
 
         return redirect()->route('drivers.index')->with('success', 'Driver updated successfully.');
     }
 
     public function destroy(Driver $driver)
     {
+        if ($driver->staff) {
+            $driver->staff->delete();
+        }
+
         $driver->delete();
+
         return redirect()->route('drivers.index')->with('success', 'Driver deleted successfully.');
     }
 }

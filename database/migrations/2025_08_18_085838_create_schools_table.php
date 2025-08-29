@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('schools', function (Blueprint $table) {
-            $table->id();
+            $table->id()->primary();
             $table->timestamps();
             $table->string('name');
             $table->string('contract_type');
             $table->string('payment_status');
             $table->string('address');
-            $table->integer('contact_details');
-            $table->integer('total_amount');
+            $table->string('contact_details'); // Changed to string
+            $table->decimal('charges', 10, 2); // Changed to decimal and renamed from total_amount
         });
     }
 

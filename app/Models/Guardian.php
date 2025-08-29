@@ -7,24 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class Guardian extends Model
 {
-    /** @use HasFactory<\Database\Factories\GuardianFactory> */
     use HasFactory;
 
     protected $fillable = [
         'name',
         'address',
-        'num_student',
         'gender',
+        'relation',
+        'contact_number',
         'user_id',
     ];
 
-    public function student()
+    /**
+     * A guardian has many students.
+     */
+    public function students()
     {
-        return $this->hasMany(Guardian::class);
+        return $this->hasMany(Student::class, 'guardian_id', 'id');
     }
 
-    public function User()
+    /**
+     * A guardian belongs to a user (the person who created/owns this guardian record).
+     */
+    public function user()
     {
-        return $this->hasOne(Guardian::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

@@ -3,125 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
-use App\Models\School;
-use App\Models\Student;
 use App\Models\Vehicle;
+use App\Models\Student;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
     /**
-     * Display a listing of the attendance records.
-     */
-    public function index()
-    {
-        // make sure Attendance model has relations: student(), school(), vehicle()
-        $attendances = Attendance::with(['student', 'school', 'vehicle'])->latest()->get();
-        return view('attendance.index', compact('attendances'));
-    }
-
-    /**
-     * Show the form for creating a new attendance record.
+     * Show attendance creation form.
      */
     public function create()
     {
-        $students = Student::all();
-        $schools = School::all();
         $vehicles = Vehicle::all();
 
-        return view('attendance.create', compact('students', 'schools', 'vehicles'));
+        return view('attendance.create', compact('vehicles'));
     }
 
     /**
-     * Store a newly created attendance record.
+     * Store attendance records.
      */
     public function store(Request $request)
     {
         $request->validate([
-            'student_id'    => 'required|exists:students,id',
-            'school_id'     => 'required|exists:schools,id',
-            'vehicle_id'    => 'required|exists:vehicles,id',
-            'date'          => 'required|date',
-            'home_pickup'   => 'required|string|max:255',
-            'school_pickup' => 'required|string|max:255',
-            'home_drop'     => 'required|string|max:255',
-            'school_drop'   => 'required|string|max:255',
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'date'       => 'required|date',
+            'attendance' => 'required|array',
         ]);
 
-        Attendance::create($request->only([
-            'student_id',
-            'school_id',
-            'vehicle_id',
-            'date',
-            'home_pickup',
-            'school_pickup',
-            'home_drop',
-            'school_drop',
-        ]));
+        foreach ($request->attendance as $studentId => $status) {
+            Attendance::updateOrCreate(
+                [
+                    'student_id' => $studentId,
+                    'vehicle_id' => $request->vehicle_id,
+                    'date'       => $request->date,
+                ],
+                [
+                    'school_id'  => Student::find($studentId)->school_id ?? null,
+                    'status'     => $status,
+                ]
+            );
+        }
 
         return redirect()->route('attendance.index')
             ->with('success', 'Attendance marked successfully.');
     }
 
     /**
-     * Show a single attendance record.
+     * List all attendance records.
      */
-    public function show(Attendance $attendance)
+    public function index()
     {
-        return view('attendance.show', compact('attendance'));
+        // Group by date and vehicle for easy reporting
+        $attendances = Attendance::with(['student', 'vehicle'])
+            ->orderBy('date', 'desc')
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->date . '-' . $item->vehicle_id;
+            });
+
+        return view('attendance.index', compact('attendances'));
     }
 
     /**
-     * Show the form for editing an attendance record.
+     * API endpoint: fetch students by vehicle.
      */
-    public function edit(Attendance $attendance)
+    public function getStudentsByVehicle($vehicleId)
     {
-        $students = Student::all();
-        $schools = School::all();
-        $vehicles = Vehicle::all();
+        $students = Student::where('vehicle_id', $vehicleId)->get();
 
-        return view('attendance.edit', compact('attendance', 'students', 'schools', 'vehicles'));
-    }
-
-    /**
-     * Update an attendance record.
-     */
-    public function update(Request $request, Attendance $attendance)
-    {
-        $request->validate([
-            'student_id'    => 'required|exists:students,id',
-            'school_id'     => 'required|exists:schools,id',
-            'vehicle_id'    => 'required|exists:vehicles,id',
-            'date'          => 'required|date',
-            'home_pickup'   => 'required|string|max:255',
-            'school_pickup' => 'required|string|max:255',
-            'home_drop'     => 'required|string|max:255',
-            'school_drop'   => 'required|string|max:255',
-        ]);
-
-        $attendance->update($request->only([
-            'student_id',
-            'school_id',
-            'vehicle_id',
-            'date',
-            'home_pickup',
-            'school_pickup',
-            'home_drop',
-            'school_drop',
-        ]));
-
-        return redirect()->route('attendance.index')
-            ->with('success', 'Attendance updated successfully.');
-    }
-
-    /**
-     * Remove an attendance record.
-     */
-    public function destroy(Attendance $attendance)
-    {
-        $attendance->delete();
-
-        return redirect()->route('attendance.index')
-            ->with('success', 'Attendance deleted successfully.');
+        return response()->json($students);
     }
 }

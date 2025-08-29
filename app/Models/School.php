@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class School extends Model
 {
-    /** @use HasFactory<\Database\Factories\SchoolFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -15,17 +14,23 @@ class School extends Model
         'contract_type',
         'payment_status',
         'address',
-        'contact',
-        'total_amount',
+        'contact_details',
+        'charges',
     ];
 
-    public function student()
+    /**
+     * A school has many students.
+     */
+    public function students()
     {
-        return $this->hasMany( School::class);
+        return $this->hasMany(Student::class, 'school_id');
     }
 
-    public function Vehicle()
+    /**
+     * A school has many vehicles.
+     */
+    public function vehicles()
     {
-        return $this->belongsToMany(School::class);
+        return $this->hasMany(Vehicle::class, 'school_id');
     }
 }

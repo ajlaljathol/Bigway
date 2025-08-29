@@ -15,15 +15,30 @@ class Driver extends Model
         'vehicle_id',
         'salary_id',
         'user_id',
+        'staff_id',
     ];
 
-    public function Vehicle()
+    // A driver belongs to one vehicle
+    public function vehicle()
     {
-        return $this->belongsToMany( Driver::class);
+        return $this->belongsTo(Vehicle::class);
     }
 
-    public function Salary()
+    // A driver belongs to one salary record
+    public function salary()
     {
-        return $this->hasOne(Driver::class);
+        return $this->belongsTo(Salary::class);
+    }
+
+    // A driver belongs to one user account
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // A driver belongs to one staff record
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
     }
 }

@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Route;
-use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
 class RouteController extends Controller
 {
+    /**
+     * Display a listing of the routes.
+     */
     public function index()
     {
-        //$routes = Route::with('vehicle')->latest()->get();
+        // Load all routes
+        $routes = Route::latest()->get();
+
         return view('routes.index', compact('routes'));
     }
 
@@ -19,8 +23,7 @@ class RouteController extends Controller
      */
     public function create()
     {
-        $vehicles = Vehicle::all();
-        return view('routes.create', compact('vehicles'));
+        return view('routes.create');
     }
 
     /**
@@ -31,10 +34,9 @@ class RouteController extends Controller
         $request->validate([
             'starting_time'  => 'required|date_format:H:i',
             'total_distance' => 'required|integer|min:1',
-           // 'vehicle_id'     => 'required|exists:vehicles,id',
         ]);
 
-        Route::create($request->all());
+        Route::create($request->only(['starting_time', 'total_distance']));
 
         return redirect()->route('routes.index')->with('success', 'Route created successfully.');
     }
@@ -44,7 +46,6 @@ class RouteController extends Controller
      */
     public function show(Route $route)
     {
-        //$route->load('vehicle');
         return view('routes.show', compact('route'));
     }
 
@@ -53,8 +54,7 @@ class RouteController extends Controller
      */
     public function edit(Route $route)
     {
-        //$vehicles = Vehicle::all();
-        return view('routes.edit', compact('route', 'vehicles'));
+        return view('routes.edit', compact('route'));
     }
 
     /**
@@ -65,10 +65,9 @@ class RouteController extends Controller
         $request->validate([
             'starting_time'  => 'required|date_format:H:i',
             'total_distance' => 'required|integer|min:1',
-          //  'vehicle_id'     => 'required|exists:vehicles,id',
         ]);
 
-        $route->update($request->all());
+        $route->update($request->only(['starting_time', 'total_distance']));
 
         return redirect()->route('routes.index')->with('success', 'Route updated successfully.');
     }

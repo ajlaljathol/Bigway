@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
 {
     /**
-     * Display a listing of the expenses.
+     * Display a listing of expenses with pagination.
      */
     public function index()
     {
-        $expenses = Expense::latest()->get();
+        $expenses = Expense::latest()->paginate(20); // paginate 20 per page
         return view('expenses.index', compact('expenses'));
     }
 
@@ -38,10 +39,9 @@ class ExpenseController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->all();
-        $data['user_id'] = Auth::id(); 
+        $data = $request->only(['date', 'amount', 'description', 'type']);
+        $data['user_id'] = Auth::id();
 
-        // Handle file upload if exists
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('expenses', 'public');
         }
@@ -64,6 +64,11 @@ class ExpenseController extends Controller
      */
     public function edit(Expense $expense)
     {
+        // Authorization: only owner can edit
+        if ($expense->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return view('expenses.edit', compact('expense'));
     }
 
@@ -72,6 +77,11 @@ class ExpenseController extends Controller
      */
     public function update(Request $request, Expense $expense)
     {
+        // Authorization: only owner can update
+        if ($expense->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'date' => 'required|date',
             'amount' => 'required|numeric|min:1',
@@ -80,10 +90,13 @@ class ExpenseController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->only(['date', 'amount', 'description', 'type']);
 
-        // Handle file upload if exists
         if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($expense->image) {
+                Storage::disk('public')->delete($expense->image);
+            }
             $data['image'] = $request->file('image')->store('expenses', 'public');
         }
 
@@ -97,7 +110,18 @@ class ExpenseController extends Controller
      */
     public function destroy(Expense $expense)
     {
+        // Authorization: only owner can delete
+        if ($expense->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Delete associated image
+        if ($expense->image) {
+            Storage::disk('public')->delete($expense->image);
+        }
+
         $expense->delete();
+
         return redirect()->route('expenses.index')->with('success', 'Expense deleted successfully.');
     }
 }
