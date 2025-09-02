@@ -146,6 +146,7 @@
             <a href="{{ route('staff.index') }}" class="btn btn-outline-primary">Staff</a>
             <a href="{{ route('expenses.index') }}" class="btn btn-outline-primary">Expenses</a>
             <a href="{{ route('routes.index') }}" class="btn btn-outline-primary">Routes</a>
+            <a href="{{ route('admin.users.create') }}" class="btn btn-outline-primary">Users</a>
         </div>
 
         <main class="py-4 main-content">

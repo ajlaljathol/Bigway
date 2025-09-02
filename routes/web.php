@@ -14,42 +14,46 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\RouteController;
-use App\Models\Caretaker;
+use App\Http\Controllers\AdminController;
 
-// Home route
+// Public home / welcome
 Route::get('/', function () {
     return view('welcome');
 });
 
+// Auth routes (login, register, password reset...)
 Auth::routes();
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::middleware(['auth'])->group(function () {
 
-Route::resource('students', StudentController::class);
+    // Shared dashboard for non-admins (and default landing for guardians/students/staff)
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::resource('guardians', GuardianController::class);
+    // Admin dashboard (AdminController::dashboard should check role server-side)
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
-Route::resource('schools', SchoolController::class);
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/users', [AdminController::class, 'StaffIndex'])->name('users.index');
+        Route::get('/users/create', [AdminController::class, 'usersCreate'])->name('users.create');
+        Route::post('/users', [AdminController::class, 'usersStore'])->name('users.store');
+        Route::get('/users/{user}/edit', [AdminController::class, 'usersEdit'])->name('users.edit');
+        Route::put('/users/{user}', [AdminController::class, 'usersUpdate'])->name('users.update');
+        Route::delete('/users/{user}', [AdminController::class, 'usersDestroy'])->name('users.destroy');
+    });
 
-Route::resource('caretakers', CaretakerController::class);
+    Route::resource('students', StudentController::class);
+    Route::resource('guardians', GuardianController::class);
+    Route::resource('schools', SchoolController::class);
+    Route::resource('caretakers', CaretakerController::class);
+    Route::resource('drivers', DriverController::class);
+    Route::resource('salaries', SalaryController::class);
+    Route::resource('vehicles', VehicleController::class);
+    Route::resource('attendance', AttendanceController::class);
+    Route::resource('staff', StaffController::class);
+    Route::resource('expenses', ExpenseController::class);
+    Route::resource('routes', RouteController::class);
 
-Route::resource('drivers', DriverController::class);
-
-Route::resource('salaries', SalaryController::class);
-
-Route::resource('vehicles', VehicleController::class);
-
-Route::resource('attendance', AttendanceController::class);
-
-Route::resource('staff', StaffController::class);
-
-Route::resource('expenses', ExpenseController::class);
-
-Route::resource('routes', RouteController::class);
-
-// AttendanceController extra route
-Route::get('/attendance/students/{vehicle}', [AttendanceController::class, 'getStudents'])
-    ->name('attendance.getStudents');
-
-
-
+    // extra attendance route
+    Route::get('/attendance/students/{vehicle}', [AttendanceController::class, 'getStudents'])
+        ->name('attendance.getStudents');
+});
